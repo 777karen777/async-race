@@ -1,28 +1,16 @@
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCars } from './store/garageSlice';
-import type { RootState } from './store/store';
-import type { AppDispatch } from './store/store';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Garage from './pages/Garage';
+import Winners from './pages/Winners';
 
 function App() {
-  const dispatch = useDispatch<AppDispatch>();
-  const cars = useSelector((state: RootState) => state.garage.cars);
-
-  useEffect(() => {
-    dispatch(fetchCars());
-  }, [dispatch]);
-
   return (
-    <div>
-      <h1>Garage</h1>
-      <ul>
-        {cars.map((car) => (
-          <li key={car.id}>
-            <span style={{ color: car.color }}>⬤</span> {car.name}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/garage" replace />} />
+        <Route path="/garage" element={<Garage />} />
+        <Route path="/winners" element={<Winners />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
