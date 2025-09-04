@@ -1,17 +1,28 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Garage from './pages/Garage';
-import Winners from './pages/Winners';
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import GaragePage from './pages/GaragePage';
+import WinnersPage from './pages/WinnersPage';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <div>
+      <nav
+        style={{
+          display: 'flex',
+          gap: '10px',
+          padding: '10px',
+          background: '#eee',
+        }}
+      >
+        <Link to="/">Garage</Link>
+        <Link to="/winners">Winners</Link>
+      </nav>
       <Routes>
-        <Route path="/" element={<Navigate to="/garage" replace />} />
-        <Route path="/garage" element={<Garage />} />
-        <Route path="/winners" element={<Winners />} />
+        <Route path="/" element={<GaragePage />} />
+        <Route path="/winners" element={<WinnersPage />} />
       </Routes>
-    </BrowserRouter>
+    </div>
   );
-}
+};
 
 export default App;
