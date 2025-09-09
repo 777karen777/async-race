@@ -1,45 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { getCars } from '../api/carsApi';
-import CarForm from '../components/CarForm';
+import { fetchCars } from '../store/garageSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import type { Car } from '../types/car';
+import type { RootState, AppDispatch } from '../store';
+// import { getCars } from '../api/carsApi';
+import CarForm from '../components/CarForm';
+import CarItem from '../components/CarItem';
 import { Pagination } from '../components/Pagination';
+import {
+  addCarLocal,
+  updateCarLocal,
+  removeCarLocal,
+} from '../store/garageSlice';
 
-import { /* useDispatch, */ useSelector } from 'react-redux';
 // import { fetchCars } from '../store/garageSlice';
 // import { RootState, AppDispatch } from "../store";
-import type { RootState /* , AppDispatch */ } from '../store';
+
+const carsPerPage = 2;
 
 const GaragePage: React.FC = () => {
-  const { loading, error } = useSelector((state: RootState) => state.garage);
-
-  const [cars, setCars] = useState<Car[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { cars, loading, error } = useSelector(
+    (state: RootState) => state.garage,
+  );
   const [currentPage, setCurrentPage] = useState(1);
-  const carsPerPage = 2;
 
   useEffect(() => {
-    getCars().then((data) => setCars(data));
-  }, []);
+    dispatch(fetchCars());
+  }, [dispatch]);
 
   const handleCarCreated = (car: Car) => {
-    setCars((prev) => [...prev, car]);
+    dispatch(addCarLocal(car));
+    setCurrentPage(1);
+  };
+
+  const handleUpdated = (car: Car) => {
+    dispatch(updateCarLocal(car));
+  };
+
+  const handleDeleted = (id: number) => {
+    dispatch(removeCarLocal(id));
+    const totalPages = Math.ceil((cars.length - 1) / carsPerPage);
+    if (currentPage > totalPages && totalPages >= 1) setCurrentPage(totalPages);
   };
 
   const startIndex = (currentPage - 1) * carsPerPage;
-  const currentCars = [...cars]
-    .reverse()
-    .slice(startIndex, startIndex + carsPerPage);
+  const currentCars = cars.slice(startIndex, startIndex + carsPerPage);
 
   return (
     <div>
-      <h1>🚗 Garage</h1>
+      <h1>🚗 Garage ({cars.length})</h1>
       <CarForm onCarCreated={handleCarCreated} />
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <ul>
         {currentCars.map((car) => (
-          <li key={car.id}>
-            {car.name} - <span style={{ color: car.color }}>{car.color}</span>
-          </li>
+          <CarItem
+            key={car.id}
+            car={car}
+            onUpdated={handleUpdated}
+            onDeleted={handleDeleted}
+          />
         ))}
       </ul>
       <Pagination

@@ -1,5 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
 import type { Car } from '../types/car';
 import { getCars } from '../api/carsApi';
 
@@ -9,37 +12,48 @@ interface GarageState {
   error: string | null;
 }
 
-const initialState: GarageState = {
-  cars: [],
-  loading: false,
-  error: null,
-};
+const initialState: GarageState = { cars: [], loading: false, error: null };
 
-// Thunk for fetching cars
 export const fetchCars = createAsyncThunk('garage/fetchCars', async () => {
-  const cars = await getCars();
-  return cars;
+  return await getCars();
 });
 
 const garageSlice = createSlice({
   name: 'garage',
   initialState,
-  reducers: {},
+  reducers: {
+    addCarLocal(state, action: PayloadAction<Car>) {
+      state.cars = [action.payload, ...state.cars];
+    },
+    updateCarLocal(state, action: PayloadAction<Car>) {
+      state.cars = state.cars.map((c) =>
+        c.id === action.payload.id ? action.payload : c,
+      );
+    },
+    removeCarLocal(state, action: PayloadAction<number>) {
+      state.cars = state.cars.filter((c) => c.id !== action.payload);
+    },
+    setPagePreserve(state, action: PayloadAction<number>) {
+      // placeholder if we store page number
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCars.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(fetchCars.pending, (s) => {
+        s.loading = true;
+        s.error = null;
       })
-      .addCase(fetchCars.fulfilled, (state, action: PayloadAction<Car[]>) => {
-        state.loading = false;
-        state.cars = action.payload;
+      .addCase(fetchCars.fulfilled, (s, action: PayloadAction<Car[]>) => {
+        s.loading = false;
+        s.cars = action.payload;
       })
-      .addCase(fetchCars.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to load cars';
+      .addCase(fetchCars.rejected, (s, action) => {
+        s.loading = false;
+        s.error = action.error.message || 'Failed to load cars';
       });
   },
 });
 
+export const { addCarLocal, updateCarLocal, removeCarLocal } =
+  garageSlice.actions;
 export default garageSlice.reducer;
